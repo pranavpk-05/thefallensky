@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://expedition.gd" id="1"]
 [ext_resource type="Script" path="res://landscape.gd" id="2"]
@@ -7,6 +7,9 @@
 [sub_resource type="CapsuleShape3D" id="Capsule"]
 radius = 0.36
 height = 1.78
+
+[sub_resource type="SphereShape3D" id="CameraSweep"]
+radius = 0.37
 
 [node name="Solstice" type="Node3D"]
 script = ExtResource("1")
@@ -27,7 +30,7 @@ shape = SubResource("Capsule")
 [node name="Figure" type="Node3D" parent="Wayfarer"]
 
 [node name="Orbit" type="Node3D" parent="Wayfarer"]
-position = Vector3(0, 1.55, 0)
+position = Vector3(0, 2.02, 0)
 
 [node name="Pitch" type="Node3D" parent="Wayfarer/Orbit"]
 rotation = Vector3(-0.16, 0, 0)
@@ -36,6 +39,7 @@ rotation = Vector3(-0.16, 0, 0)
 spring_length = 5.8
 margin = 0.2
 collision_mask = 1
+shape = SubResource("CameraSweep")
 
 [node name="Camera3D" type="Camera3D" parent="Wayfarer/Orbit/Pitch/Boom"]
 current = true
