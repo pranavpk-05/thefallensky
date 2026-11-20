@@ -7,9 +7,9 @@ const EVIDENCE := {
 	"radio": ["Broken field radio", "The receiver is still tuned to 81.4. Beneath the static, Mara repeats: 'If you hear the bell, do not follow the lights. They have our route.' The transmit valve has been pulled."],
 	"tracks": ["Two sets of tracks", "Someone walked down from the west ridge in clean boots, then dragged a heavy crate toward the old river tunnel. Mara's party wore hobnailed field boots."],
 	"kit": ["Cut harness and flare", "The harness buckle has a survey stamp. Its straps were severed cleanly. A fresh red flare is wedged in the roll beneath it."],
-	"relay": ["Timed relay", "The relay from the river tunnel stored a command at 02:14: divert the expedition's aircraft beacon from the landing strip to Intake Four. It authenticated with the same mark from Mara's journal."],
+	"relay": ["Timed relay", "At 02:14 the tunnel relay diverted the expedition beacon to Intake Four using the mark in Mara's journal. The same command forced all three Spire seals into storm mode, hiding the aircraft from the valley."],
 	"manifest": ["Intake Four manifest", "A Vesper Directorate custody manifest lists six expedition members, received alive at 02:28. The official accident bulletin was filed at 02:10, four minutes before the diversion."],
-	"court": ["Court operator's record", "Mara left a voice record inside the console. The Directorate diverted their flight to seize the expedition's calibration. She copied the original command and locked it into the Sunken Spire. Intake Four remains occupied."],
+	"court": ["Court operator's record", "Pike's override stamp unlocks Mara's copy of the sabotage order. Pike used the storms to disguise Vesper's seizures as natural disasters. Mara and the crew are still beneath the Spire. She routed their live signal to the relay."],
 	"flight_log": ["Observatory flight recorder", "The observatory tracked a second aircraft shadowing Mara's flight. Its pilot called in the diversion before the emergency beacon lit. This is independent corroboration."],
 	"runes": ["Caretaker's inscription", "The three seals govern the valley's wind and the Intake Four lock. Left together, they can open a route or send a signal past the mountains."],
 	"vault_hint": ["A caretaker's supply slate", "The slate shows the order for opening the emergency cache. The crescent watches for dawn. The sun warms the spring. The current carries the heat home."],
@@ -20,7 +20,7 @@ const EVIDENCE := {
 	"windgate_ledger": ["West gate lock register", "Windgate case. 21:12. Orrin Pike signs out the original key under Vale Sayer's name. The receipt for Vale's replacement is timestamped 21:23 at the airstrip. Orrin says he never left the north pump room."],
 	"windgate_tape": ["Iris's backup recording", "Windgate case. 21:17. The west pressure alarm sounds. Lysa says, 'Pike, you made me come here. This is no inspection.' A second voice orders the Intake Four door shut."],
 	"windgate_statement": ["Noah's key receipt", "Windgate case. Vale was in Noah's workshop from 21:06 until 21:23. The replacement key never left the bench before the alarm. This clears Vale even though the old lock register names him."],
-	"windgate_end": ["Lysa's second ledger", "Lysa is alive. Her missing-person entries were filed as flood fatalities, then sold to a Vesper broker as vacant land. Mara hid the original transfer list at the North Observatory."],
+	"windgate_end": ["Lysa's second ledger", "Lysa is alive. Pike filed missing residents as flood fatalities so a Vesper broker could buy their land. Lysa hands you his override stamp for the Hanging Court. Mara left a backup transfer list at the North Observatory."],
 }
 
 var collected := PackedStringArray()
@@ -70,7 +70,7 @@ func journal_entries() -> Array[Dictionary]:
 
 func deduction_status() -> String:
 	if solved:
-		return "The Directorate diverted the expedition, declared it lost in advance, and took its survivors into custody. Mara left proof at the Spire."
+		return "Pike sabotaged the seals on Vesper's orders. The Directorate diverted the flight, declared it lost in advance, and detained the survivors. Mara's channel is open at the Spire."
 	if deduction_available():
 		return "Select three records that show who diverted the flight, what happened to the crew, and whether the accident story was planned."
 	return "Find the diversion command, proof that the crew survived, and a witness who can explain the link."

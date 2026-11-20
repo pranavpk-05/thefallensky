@@ -25,6 +25,8 @@ var sun: DirectionalLight3D
 var sky_shader: ShaderMaterial
 
 var _story_mood := 0.0
+var _storm_relief := 0.0
+var _clear_target := 0.0
 var _local_gloom := 0.0
 var _world_time := 230.0
 var _weather_sample := 0.0
@@ -62,8 +64,9 @@ func _ready() -> void:
 	_update_weather()
 
 
-func set_frontier_mood(progress: float) -> void:
+func set_frontier_mood(progress: float, calm := 0.0) -> void:
 	_story_mood = clampf(progress, 0.0, 1.0)
+	_clear_target = clampf(calm, 0.0, 1.0)
 
 
 func set_quality(level: int) -> void:
@@ -83,6 +86,7 @@ func set_quality(level: int) -> void:
 
 func _process(delta: float) -> void:
 	_world_time += delta
+	_storm_relief = move_toward(_storm_relief, _clear_target, delta * 0.62)
 	var camera := get_viewport().get_camera_3d()
 	var forest_gloom := 0.0
 	if is_instance_valid(camera):
@@ -104,8 +108,9 @@ func _update_weather() -> void:
 	var cycle := 0.5 - 0.5 * cos(_world_time * TAU / 540.0)
 	var forecast := 0.5 - 0.5 * cos(_world_time * TAU / 181.0)
 	var night := maxf(smoothstep(0.33, 0.94, cycle), smoothstep(0.18, 0.97, _story_mood))
+	night *= 1.0 - _storm_relief * 0.76
 	var rain_target := forecast * (0.70 + _story_mood * 0.30)
-	storm_strength = smoothstep(0.38, 0.94, rain_target)
+	storm_strength = smoothstep(0.38, 0.94, rain_target) * (1.0 - _storm_relief)
 	_rain.emitting = storm_strength > 0.10
 	if _rain.emitting:
 		_rain.amount_ratio = storm_strength * (0.54 if _quality < 2 else 1.0)

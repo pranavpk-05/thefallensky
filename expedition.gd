@@ -55,7 +55,10 @@ func _physics_process(delta: float) -> void:
 		return
 	var pos: Vector3 = pilot.global_position
 	if Input.is_action_just_pressed("restart"):
-		pilot.respawn(checkpoint)
+		if campaign.running:
+			campaign.retry_checkpoint("Returned to your checkpoint.")
+		else:
+			pilot.respawn(checkpoint)
 		return
 	var out_of_bounds := pos.y < -6.0 or absf(pos.x) > 215.0 or pos.z < -346.0 or pos.z > 66.0
 	var submerged: bool = pos.y < valley.water_level - 0.25 and absf(pos.x - valley.river_center(pos.z)) < 7.7
@@ -64,7 +67,8 @@ func _physics_process(delta: float) -> void:
 		campaign.on_hazard()
 		return
 	if Input.is_action_just_pressed("restore"):
-		if step < shrines.size() and pos.distance_to(shrines[step].global_position) < 6.0:
+		if step < shrines.size() and pos.distance_to(shrines[step].global_position) < 6.0 \
+				and campaign.can_restore_seal():
 			_restore_site()
 		elif _near_restored_updraft(pos):
 			pilot.ride_updraft()
@@ -97,9 +101,16 @@ func show_goal(title: String, details: String, aim: Vector3, show_marker: bool) 
 	objective.text = title
 	distance_label.text = details
 	var camera := get_viewport().get_camera_3d()
-	marker.visible = show_marker and camera != null and not camera.is_position_behind(aim)
+	marker.visible = show_marker and camera != null
 	if marker.visible:
 		var bounds := get_viewport().get_visible_rect().grow(-47)
+		if camera.is_position_behind(aim):
+			var local_x := camera.to_local(aim).x
+			marker.text = "‹" if local_x < 0.0 else "›"
+			marker.position = Vector2(bounds.position.x if local_x < 0.0 else bounds.end.x, bounds.get_center().y) \
+				- marker.size * 0.5
+			return
+		marker.text = "◇"
 		var screen := camera.unproject_position(aim)
 		marker.position = screen.clamp(bounds.position, bounds.end) - marker.size * 0.5
 
@@ -120,6 +131,11 @@ func reset_seals(restored_count: int) -> void:
 	step = restored_count
 	for index in shrines.size():
 		_set_shrine(index, restored if index < step else (active if index == step else inactive))
+
+
+func dim_seals() -> void:
+	for index in shrines.size():
+		_set_shrine(index, inactive)
 
 
 func _near_restored_updraft(pos: Vector3) -> bool:

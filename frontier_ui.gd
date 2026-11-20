@@ -9,6 +9,7 @@ signal deduction_submitted(ids: PackedStringArray)
 signal cue_requested(id: StringName)
 signal modal_changed(active: bool)
 signal windgate_choice(choice: String)
+signal ending_requested
 
 const INK := Color("#081618")
 const BONE := Color("#f1e5ce")
@@ -57,6 +58,8 @@ var _ending_title := ""
 var _decision_question := ""
 var _decision_options := {}
 var _ending_text := ""
+var campaign_complete := false
+var _victory := false
 var _heading_font: SystemFont
 var _quitting := false
 
@@ -150,9 +153,14 @@ func notify(message: String, duration := 3.5) -> void:
 	_toast_animation.tween_property(panel, "modulate:a", 0.0, 0.45)
 
 
-func show_ending(title: String, revelation: String) -> void:
+func show_opening() -> void:
+	_show("opening")
+
+
+func show_ending(title: String, revelation: String, victory := false) -> void:
 	_ending_title = title
 	_ending_text = revelation
+	_victory = victory
 	_show("ending")
 
 
@@ -188,6 +196,8 @@ func _input(event: InputEvent) -> void:
 			_show(_settings_from)
 		elif _modal == "title":
 			return
+		elif _modal == "credits":
+			_show("ending")
 		else:
 			_show("")
 		get_viewport().set_input_as_handled()
@@ -235,6 +245,10 @@ func _show(screen: String) -> void:
 			_build_journal(shade)
 		"ending":
 			_build_ending(shade)
+		"opening":
+			_build_opening(shade)
+		"credits":
+			_build_credits(shade)
 		"windgate":
 			_build_windgate(shade)
 
@@ -294,6 +308,8 @@ func _build_pause(shade: Control) -> void:
 	var resume := _button(menu, "Resume", _show.bind(""))
 	_button(menu, "Field Journal", _show.bind("journal"))
 	_button(menu, "Settings", _open_settings.bind("pause"))
+	if campaign_complete:
+		_button(menu, "View Ending", func() -> void: ending_requested.emit())
 	_button(menu, "Save and Return to Title", _save_to_title)
 	_focus(resume)
 
@@ -393,14 +409,37 @@ func _build_journal(shade: Control) -> void:
 		_focus(_evidence_list)
 
 
+func _build_opening(shade: Control) -> void:
+	var panel := _centered_panel(shade, 622)
+	_label(panel, "The Lost Expedition", 36, BONE, true, true)
+	_rule(panel)
+	_label(panel, "For centuries the Spires held the Frontier above the valley. Then all three rang in the same night, and the storms began. Mara Vale went looking for the hand that rang them.", 19, BONE, false, true)
+	_label(panel, "Six days later, a broken transmission reaches your camp. “Wayfarer, they have our route. Begin where we left the fire.”", 19, MUTED, false, true)
+	_focus(_button(panel, "Follow Mara's Signal", _show.bind("")))
+
+
 func _build_ending(shade: Control) -> void:
 	var panel := _centered_panel(shade, 622)
+	if _victory:
+		_label(panel, "CAMPAIGN COMPLETE", 14, CYAN)
 	_label(panel, _ending_title, 36, BONE, true, true)
 	_rule(panel)
 	_label(panel, _ending_text, 19, MUTED, false, true)
 	var explore := _button(panel, "Return to the Valley", _show.bind(""))
+	if _victory:
+		_button(panel, "Credits", _show.bind("credits"))
 	_button(panel, "Save and Return to Title", _save_to_title)
 	_focus(explore)
+
+
+func _build_credits(shade: Control) -> void:
+	var panel := _centered_panel(shade, 622)
+	_label(panel, "Solstice of the Sunken Spire", 34, BONE, true, true)
+	_label(panel, "Dark Frontier", 21, CYAN)
+	_rule(panel)
+	_label(panel, "Built with Godot Engine", 18, BONE)
+	_label(panel, "Godot Engine contributors  ·  MIT License", 16, MUTED)
+	_focus(_button(panel, "Return to Ending", _show.bind("ending")))
 
 
 func _build_hud() -> void:
@@ -475,8 +514,8 @@ func _centered_panel(parent: Control, width: float) -> VBoxContainer:
 
 
 func _start_game() -> void:
-	new_game_requested.emit()
 	_show("")
+	new_game_requested.emit()
 
 
 func _continue_game() -> void:

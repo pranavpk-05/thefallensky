@@ -149,6 +149,12 @@ func _build_relay() -> void:
 	var rescue := _ground(center.x + 5.3, center.z - 1.1)
 	_console(rescue, valve_color(true))
 	_point("rescue", rescue + Vector3.UP * 0.93)
+	points["spire_start"] = points["publish"]
+	points["anchor_east"] = points["rescue"]
+	var west := _ground(center.x - 4.0, center.z + 1.9)
+	_console(west, amber)
+	_point("anchor_west", west + Vector3.UP * 0.93)
+	points["anchor_core"] = points["publish"]
 
 
 func valve_color(warm: bool) -> Material:

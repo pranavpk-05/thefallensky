@@ -144,8 +144,7 @@ func advance(delta: float, storm: float, player: Vector3, case_file: RefCounted)
 	_alarm = storm > 0.65
 	var vanished := vanished_at < 0.0 and age >= 22.0 and (storm >= 0.4 or age >= 105.0)
 	if vanished:
-		vanished_at = age
-		refresh(case_file)
+		trigger_disappearance(case_file)
 	_mover_clock += delta
 	if _mover_clock < 0.045:
 		return vanished
@@ -176,6 +175,23 @@ func advance(delta: float, storm: float, player: Vector3, case_file: RefCounted)
 	return vanished
 
 
+func trigger_disappearance(case_file: RefCounted) -> void:
+	if vanished_at < 0.0 and case_file.camp_complete():
+		vanished_at = age
+		refresh(case_file)
+
+
+func campaign_lead(case_file: RefCounted) -> String:
+	if exposed:
+		return RESCUE
+	for id in [LEDGER, RADIO]:
+		if not case_file.collected.has(id):
+			return id
+	if not case_file.collected.has(SEAL) and not case_file.collected.has(WITNESS):
+		return SEAL
+	return BOARD
+
+
 func title_for(id: String) -> String:
 	return "%s, %s" % [PEOPLE[id][0], PEOPLE[id][1].to_lower()] if PEOPLE.has(id) else LABELS[id]
 
@@ -198,14 +214,20 @@ func point(id: String) -> Vector3:
 	return actors[id].position + Vector3.UP * 0.88 if actors.has(id) else points[id]
 
 
-func speak(id: String) -> String:
+func speak(id: String, case_file: RefCounted) -> String:
 	var said := int(met.get(id, 0))
 	met[id] = said + 1
 	trust[id] = mini(3, int(trust.get(id, 0)) + 1)
 	_talk_until[id] = age + 4.0
 	var words: String = ORDINARY[id]
-	if rescued and id in ["ada", "lysa"]:
-		words = "Mara's notes had another name on them. North Observatory. Promise me you'll go there when the weather breaks."
+	if case_file.solved and id in ["ada", "lysa"]:
+		words = "I heard Mara on the open channel. When the relay clears, I'll tell the families where to meet her crew."
+	elif rescued and id in ["ada", "lysa"]:
+		words = "Use Pike's stamp at the Hanging Court. Mara also left a transfer list at the North Observatory if you need a second copy."
+	elif case_file.collected.has(LEDGER) and id == "orrin":
+		words = "Those initials could belong to anyone. The river was already rising when I opened the west gate."
+	elif case_file.collected.has(RADIO) and id == "iris":
+		words = "That second voice came over a Directorate channel. I heard it again on the night Mara's beacon vanished."
 	elif vanished_at >= 0.0 and AFTER.has(id):
 		words = AFTER[id]
 		if said > 0 and id == "noah" and wrong > 0:
